@@ -1,0 +1,21 @@
+#Connect to Microsoft
+Connect-MsolService
+
+# Prompt for user principal name (UPN) of the user whose password needs to be reset
+$UserUPN =  Read-Host "Enter the email of the user whose password you want to reset"
+
+# Define an array of ASCII values representing alphanumeric characters and the specified special characters
+$CharacterSet = @(48..57) + @(65..90) + @(97..122) + @(33, 64, 35, 36, 37, 63)  # ASCII values for "!@#$%?"
+
+# Generate a random password
+$NewPassword = -join ($CharacterSet | Get-Random -Count 12 | ForEach-Object {[char]$_}) # Select 12 random characters
+$NewPassword += [char]($CharacterSet | Get-Random) # Append one random special character
+
+# Rest User password 
+Set-MsolUserPassword -UserPrincipalName $UserUPN -NewPassword $NewPassword -ForceChangePassword $true
+
+# Rest all User MFA methods
+Set-MsolUser -UserPrincipalName $UserUPN -StrongAuthenticationMethods @()
+
+# Print the new password
+Write-Output "Username: $UserUPN" "New Password: $NewPassword" 
